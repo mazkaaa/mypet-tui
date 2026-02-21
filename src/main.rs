@@ -4,16 +4,17 @@ use std::io;
 use std::time::Duration;
 
 use ratatui::crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use ratatui::prelude::*;
 
+mod animation;
 mod app;
 mod events;
 mod pet;
 mod stats;
 mod tui;
 mod ui;
+mod widgets;
 
-use app::{App, GameState};
+use app::App;
 use tui::Tui;
 
 #[tokio::main]

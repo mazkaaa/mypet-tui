@@ -8,7 +8,7 @@ use ratatui::{
 };
 
 use crate::app::{App, GameState};
-use crate::pet::{LifeStage, PetState};
+use crate::pet::LifeStage;
 
 /// Render the UI
 pub fn render(frame: &mut Frame, app: &App) {
@@ -71,19 +71,16 @@ fn render_pet(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {
         .margin(1)
         .split(area)[0];
 
-    // ASCII art with state-based styling
-    let art_color = match app.pet.state {
-        PetState::Sleeping { .. } => Color::Blue,
-        PetState::Sick { .. } => Color::Yellow,
-        PetState::Dead => Color::Red,
-        _ => Color::White,
-    };
-
-    let pet_art = Paragraph::new(app.pet.stage.ascii_art())
-        .alignment(Alignment::Center)
-        .style(Style::default().fg(art_color));
-
-    frame.render_widget(pet_art, inner);
+    // Use animated pet for hatched stages, static art for egg
+    if app.pet.stage == LifeStage::Egg {
+        let art_color = Color::White;
+        let pet_art = Paragraph::new(app.pet.stage.ascii_art())
+            .alignment(Alignment::Center)
+            .style(Style::default().fg(art_color));
+        frame.render_widget(pet_art, inner);
+    } else {
+        frame.render_widget(&app.animated_pet, inner);
+    }
 }
 
 fn render_stats(frame: &mut Frame, app: &App, area: ratatui::layout::Rect) {

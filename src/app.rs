@@ -2,8 +2,10 @@
 
 use std::time::Instant;
 
+use crate::animation::types::AnimationType;
 use crate::events::EventSystem;
 use crate::pet::{LifeStage, Pet, PetState};
+use crate::widgets::AnimatedPet;
 
 /// Game state
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,6 +31,10 @@ pub struct App {
     pub status_message: String,
     /// Event system for random occurrences
     pub event_system: EventSystem,
+    /// Animation system
+    pub animated_pet: AnimatedPet,
+    /// Last animation update time
+    last_animation_update: Instant,
 }
 
 impl App {
@@ -44,11 +50,16 @@ impl App {
             last_update: Instant::now(),
             status_message: status,
             event_system: EventSystem::new(),
+            animated_pet: AnimatedPet::new(),
+            last_animation_update: Instant::now(),
         }
     }
 
     /// Handle tick event (called periodically)
     pub fn tick(&mut self) {
+        // Update animation at 10 FPS
+        self.update_animation();
+
         // Check for game over
         if self.game_state == GameState::GameOver {
             return;
@@ -61,10 +72,14 @@ impl App {
         // Update the pet
         self.pet.update(delta);
 
+        // Update animation based on pet state
+        self.update_pet_animation();
+
         // Check if egg died
         if self.pet.is_egg_dead() {
             self.game_state = GameState::GameOver;
             self.status_message = "The egg failed to hatch... Game Over!".to_string();
+            self.animated_pet.trigger(AnimationType::TransitionDie);
             return;
         }
 
@@ -83,6 +98,41 @@ impl App {
         self.status_message = self.pet.status_message();
     }
 
+    /// Update animation system (called at 10 FPS)
+    pub fn update_animation(&mut self) {
+        if self.last_animation_update.elapsed().as_millis() >= 100 {
+            self.animated_pet.update();
+            self.last_animation_update = Instant::now();
+        }
+    }
+
+    /// Update animation based on pet state
+    fn update_pet_animation(&mut self) {
+        use crate::pet::PetState;
+
+        match self.pet.state {
+            PetState::Normal => {
+                // Check happiness level for idle animation
+                if self.pet.stats.happiness.value() < 30 {
+                    self.animated_pet.set_idle_sad();
+                } else if self.pet.stats.happiness.value() > 70 {
+                    self.animated_pet.set_idle_happy();
+                } else {
+                    self.animated_pet.set_idle();
+                }
+            }
+            PetState::Sleeping { .. } => {
+                self.animated_pet.set_idle_sleeping();
+            }
+            PetState::Sick { .. } => {
+                self.animated_pet.trigger(AnimationType::TransitionGetSick);
+            }
+            PetState::Dead => {
+                self.animated_pet.trigger(AnimationType::TransitionDie);
+            }
+        }
+    }
+
     /// Quit the application
     pub fn quit(&mut self) {
         self.should_quit = true;
@@ -97,6 +147,7 @@ impl App {
             self.event_system = EventSystem::new();
             self.status_message = self.pet.status_message();
             self.last_update = Instant::now();
+            self.animated_pet = AnimatedPet::new();
         }
     }
 
@@ -122,7 +173,10 @@ impl App {
         }
 
         match self.pet.feed() {
-            Ok(()) => self.status_message = format!("You fed {}!", self.pet.name),
+            Ok(()) => {
+                self.status_message = format!("You fed {}!", self.pet.name);
+                self.animated_pet.trigger(AnimationType::ActionEating);
+            }
             Err(msg) => self.status_message = msg.to_string(),
         }
     }
@@ -134,7 +188,10 @@ impl App {
         }
 
         match self.pet.play() {
-            Ok(()) => self.status_message = format!("You played with {}!", self.pet.name),
+            Ok(()) => {
+                self.status_message = format!("You played with {}!", self.pet.name);
+                self.animated_pet.trigger(AnimationType::ActionPlaying);
+            }
             Err(msg) => self.status_message = msg.to_string(),
         }
     }
@@ -146,7 +203,10 @@ impl App {
         }
 
         match self.pet.clean() {
-            Ok(()) => self.status_message = format!("You cleaned {}!", self.pet.name),
+            Ok(()) => {
+                self.status_message = format!("You cleaned {}!", self.pet.name);
+                self.animated_pet.trigger(AnimationType::ActionCleaning);
+            }
             Err(msg) => self.status_message = msg.to_string(),
         }
     }
@@ -159,11 +219,17 @@ impl App {
 
         match self.pet.state {
             PetState::Sleeping { .. } => match self.pet.wake() {
-                Ok(()) => self.status_message = format!("{} woke up!", self.pet.name),
+                Ok(()) => {
+                    self.status_message = format!("{} woke up!", self.pet.name);
+                    self.animated_pet.trigger(AnimationType::TransitionWakeUp);
+                }
                 Err(msg) => self.status_message = msg.to_string(),
             },
             _ => match self.pet.sleep() {
-                Ok(()) => self.status_message = format!("{} went to sleep!", self.pet.name),
+                Ok(()) => {
+                    self.status_message = format!("{} went to sleep!", self.pet.name);
+                    self.animated_pet.trigger(AnimationType::ActionSleeping);
+                }
                 Err(msg) => self.status_message = msg.to_string(),
             },
         }
@@ -176,7 +242,10 @@ impl App {
         }
 
         match self.pet.give_medicine() {
-            Ok(()) => self.status_message = format!("You gave {} medicine!", self.pet.name),
+            Ok(()) => {
+                self.status_message = format!("You gave {} medicine!", self.pet.name);
+                self.animated_pet.trigger(AnimationType::ActionMedicine);
+            }
             Err(msg) => self.status_message = msg.to_string(),
         }
     }

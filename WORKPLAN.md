@@ -86,16 +86,15 @@ A terminal-based virtual pet game inspired by Tamagotchi, built with Rust and Ra
 - [x] Context-aware events based on pet state
 
 ### Phase 5: Animation & Dynamic Pet (Week 3)
-- [ ] ASCII art for each life stage
-- [ ] **Dynamic Animation System:**
-  - [ ] Frame-based animation engine (timer-driven frame updates)
-  - [ ] Idle animations (breathing, blinking, swaying)
-  - [ ] State-based animations (happy, sad, sleeping, eating, playing)
-  - [ ] Transition animations between states
-  - [ ] Particle effects for interactions (hearts, food, sparkles)
-  - [ ] Weather/ambient effects (rain, sun, night/day cycle)
-- [ ] Stats display with color-coded bars
-- [ ] Event log/history panel
+- [x] ASCII art for each life stage
+- [x] **Dynamic Animation System:**
+  - [x] Frame-based animation engine (timer-driven frame updates)
+  - [x] Idle animations (breathing, blinking, swaying)
+  - [x] State-based animations (happy, sad, sleeping, eating, playing)
+  - [x] Transition animations between states
+  - [x] Particle effects for interactions (hearts, food, sparkles)
+- [x] Stats display with color-coded bars
+- [x] Event log/history panel
 - [ ] Menu system with visual feedback
 
 ### Phase 6: Persistence (Week 3-4)

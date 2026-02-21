@@ -1,7 +1,5 @@
 //! Stats system with bounded values
 
-use std::ops::{Add, Sub};
-
 /// A bounded value that clamps between MIN and MAX
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StatValue {

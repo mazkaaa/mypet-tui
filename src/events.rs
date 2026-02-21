@@ -318,4 +318,5 @@ mod tests {
 }
 
 // Need to import Pet for tests
+#[allow(unused_imports)]
 use crate::pet::Pet as _;

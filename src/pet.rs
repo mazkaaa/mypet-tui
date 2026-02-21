@@ -260,6 +260,9 @@ impl Pet {
             return;
         }
 
+        // Update life stage based on age
+        self.update_life_stage();
+
         // Apply stat decay every 5 seconds
         if self.last_decay.elapsed() >= Duration::from_secs(5) {
             self.stats.decay();
@@ -488,6 +491,27 @@ impl Pet {
         }
     }
 
+    /// Update life stage based on age
+    pub fn update_life_stage(&mut self) {
+        if self.stage == LifeStage::Egg {
+            return;
+        }
+
+        let age_minutes = self.age_seconds / 60;
+
+        let new_stage = match self.stage {
+            LifeStage::Egg => LifeStage::Egg,
+            LifeStage::Baby if age_minutes >= 5 => LifeStage::Child,
+            LifeStage::Child if age_minutes >= 15 => LifeStage::Teen,
+            LifeStage::Teen if age_minutes >= 30 => LifeStage::Adult,
+            _ => return,
+        };
+
+        if new_stage != self.stage {
+            self.stage = new_stage;
+        }
+    }
+
     /// Get a status message
     pub fn status_message(&self) -> String {
         if !self.state.is_alive() {
@@ -562,14 +586,22 @@ mod tests {
     #[test]
     fn pet_ages_correctly() {
         let mut pet = Pet::new("Test");
+        // Simulate hatching by setting age to after hatching and clearing egg_stats
         pet.age_seconds = 31; // Just over 30s
+        pet.stage = LifeStage::Baby; // Skip egg stage
         pet.update_life_stage();
         assert_eq!(pet.stage, LifeStage::Baby);
+
+        // Now test transition to Child (5 minutes = 300 seconds)
+        pet.age_seconds = 301;
+        pet.update_life_stage();
+        assert_eq!(pet.stage, LifeStage::Child);
     }
 
     #[test]
     fn feeding_increases_hunger() {
         let mut pet = Pet::new("Test");
+        pet.stage = LifeStage::Baby; // Skip egg stage
         pet.stats.hunger = StatValue::new(30);
         pet.feed().unwrap();
         assert!(pet.stats.hunger.value() > 30);

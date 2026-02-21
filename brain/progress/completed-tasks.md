@@ -56,15 +56,16 @@ This document tracks what has been completed in the MyPet TUI project.
 
 ## Phase 5: Animation ✅
 
-- [x] Animation engine architecture
-- [x] Frame-based animations
-- [x] Priority system
-- [x] Particle effects
-- [x] Frame loader and cache
+- [x] Animation types and priority enum
+- [x] Animation frame struct with particles
+- [x] Animation engine with priority queue
+- [x] Frame cache with built-in ASCII art
 - [x] AnimatedPet widget
-- [x] 10 FPS target achieved
+- [x] 10 FPS animation updates
+- [x] State-based animation triggers
+- [x] Action animation triggers
 
-**Date Completed**: Not started
+**Date Completed**: 2026-02-21
 
 ## Phase 6: Persistence ✅
 

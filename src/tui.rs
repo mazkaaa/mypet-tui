@@ -2,8 +2,6 @@
 
 use std::io;
 
-use ratatui::prelude::*;
-
 use crate::app::App;
 use crate::ui;
 
